@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: img-to-svg-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    plan: free
+    envVars:
+      - key: ALLOWED_ORIGINS
+        value: https://frontend-sigma-one-38.vercel.app

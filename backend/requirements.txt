@@ -1,7 +1,7 @@
 fastapi
 uvicorn[standard]
 python-multipart
-vtracer
-rembg
 Pillow
+numpy
+rembg
 python-dotenv
