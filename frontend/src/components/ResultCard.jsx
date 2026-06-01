@@ -35,7 +35,14 @@ export default function ResultCard({ item }) {
       </div>
 
       <div className="px-4 py-3 flex items-center justify-between border-t border-gray-50">
-        <span className="text-sm text-gray-600 truncate">{item.filename}</span>
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="text-sm text-gray-600 truncate">{item.filename}</span>
+          {item.similarity != null && (
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${item.similarity >= 99 ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+              유사도 {item.similarity}%
+            </span>
+          )}
+        </div>
         <div className="flex gap-2 shrink-0">
           <button
             onClick={() => setShowCode(!showCode)}

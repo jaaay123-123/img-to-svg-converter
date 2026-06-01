@@ -3,10 +3,14 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "main": "electron-main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron": "electron .",
+    "electron:dev": "VITE_API_URL=http://127.0.0.1:8000 vite build && electron .",
+    "electron:build": "VITE_API_URL=http://127.0.0.1:8000 vite build && electron-builder --mac --dir"
   },
   "dependencies": {
     "axios": "^1.7.2",
@@ -18,8 +22,35 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
+    "electron": "^42.3.0",
+    "electron-builder": "^26.8.1",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "vite": "^5.3.1"
+  },
+  "build": {
+    "appId": "com.imgtosvg.app",
+    "productName": "Image to SVG Converter",
+    "files": [
+      "dist/**/*",
+      "electron-main.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend",
+        "to": "backend",
+        "filter": ["**/*", "!venv/**", "!node_modules/**", "!__pycache__/**", "!*.pyc", "!.env"]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.graphics-design",
+      "target": [
+        {
+          "target": "dir",
+          "arch": ["arm64", "x64"]
+        }
+      ]
+    }
   }
 }
