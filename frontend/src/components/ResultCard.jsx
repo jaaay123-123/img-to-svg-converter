@@ -3,14 +3,14 @@ import { useState, useEffect } from 'react'
 export default function ResultCard({ item }) {
   const [copied, setCopied] = useState(false)
   const [showCode, setShowCode] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
+  const [previewTarget, setPreviewTarget] = useState(null) // 'original' | 'svg' | null
 
   useEffect(() => {
-    if (!showPreview) return
-    const onKey = (e) => { if (e.key === 'Escape') setShowPreview(false) }
+    if (!previewTarget) return
+    const onKey = (e) => { if (e.key === 'Escape') setPreviewTarget(null) }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [showPreview])
+  }, [previewTarget])
 
   if (item.status !== 'done' || !item.svgContent) return null
 
@@ -35,20 +35,23 @@ export default function ResultCard({ item }) {
     <>
       <div className="border border-gray-100 rounded-xl overflow-hidden">
         <div className="grid grid-cols-2 divide-x divide-gray-100">
-          <div className="bg-gray-50 p-4 flex items-center justify-center aspect-video">
-            <img src={originalUrl} alt="original" className="max-h-full max-w-full object-contain" />
-          </div>
-          <div
-            className="bg-white p-4 flex items-center justify-center aspect-video relative group cursor-zoom-in"
-            onClick={() => setShowPreview(true)}
-          >
-            <img src={svgUrl} alt="svg" className="max-h-full max-w-full object-contain" />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-2 py-1 rounded-md">
-                클릭하여 크게 보기
-              </span>
+          {[
+            { url: originalUrl, alt: '원본', target: 'original', bg: 'bg-gray-50' },
+            { url: svgUrl, alt: 'SVG', target: 'svg', bg: 'bg-white' },
+          ].map(({ url, alt, target, bg }) => (
+            <div
+              key={target}
+              className={`${bg} p-4 flex items-center justify-center aspect-video relative group cursor-zoom-in`}
+              onClick={() => setPreviewTarget(target)}
+            >
+              <img src={url} alt={alt} className="max-h-full max-w-full object-contain" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-2 py-1 rounded-md">
+                  {alt} 크게 보기
+                </span>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
 
         <div className="px-4 py-3 flex items-center justify-between border-t border-gray-50">
@@ -62,7 +65,7 @@ export default function ResultCard({ item }) {
           </div>
           <div className="flex gap-2 shrink-0">
             <button
-              onClick={() => setShowPreview(true)}
+              onClick={() => setPreviewTarget('svg')}
               className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               미리보기
@@ -95,26 +98,41 @@ export default function ResultCard({ item }) {
         )}
       </div>
 
-      {showPreview && (
+      {previewTarget && (
         <div
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6"
-          onClick={() => setShowPreview(false)}
+          onClick={() => setPreviewTarget(null)}
         >
           <div
             className="relative bg-white rounded-2xl overflow-hidden max-w-5xl w-full max-h-[90vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-              <span className="text-sm font-medium text-gray-700">{item.filename}</span>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={handleDownload}
-                  className="text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  onClick={() => setPreviewTarget('original')}
+                  className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${previewTarget === 'original' ? 'bg-gray-900 text-white' : 'border border-gray-200 hover:bg-gray-50'}`}
                 >
-                  다운로드
+                  원본
                 </button>
                 <button
-                  onClick={() => setShowPreview(false)}
+                  onClick={() => setPreviewTarget('svg')}
+                  className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${previewTarget === 'svg' ? 'bg-gray-900 text-white' : 'border border-gray-200 hover:bg-gray-50'}`}
+                >
+                  SVG
+                </button>
+              </div>
+              <div className="flex gap-2">
+                {previewTarget === 'svg' && (
+                  <button
+                    onClick={handleDownload}
+                    className="text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    다운로드
+                  </button>
+                )}
+                <button
+                  onClick={() => setPreviewTarget(null)}
                   className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   닫기
@@ -123,8 +141,8 @@ export default function ResultCard({ item }) {
             </div>
             <div className="flex-1 overflow-auto p-6 flex items-center justify-center bg-gray-50">
               <img
-                src={svgUrl}
-                alt="svg preview"
+                src={previewTarget === 'svg' ? svgUrl : originalUrl}
+                alt={previewTarget === 'svg' ? 'SVG 미리보기' : '원본 미리보기'}
                 className="max-w-full max-h-full object-contain"
                 style={{ minHeight: '300px' }}
               />
